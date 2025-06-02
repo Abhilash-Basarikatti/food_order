@@ -29,25 +29,26 @@ jobs:
         run: |
           ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd food-app
+            
+            echo "Taking down all services..."
+            docker-compose down --volumes
 
-            echo "Stopping current services..."
-            docker-compose stop
-
-            echo "Pulling latest changes..."
-            docker-compose pull
+            echo "Removing old containers if any exist..."
+            docker-compose rm -f
 
             echo "Building app with latest changes..."
-            COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose build --pull
+            docker-compose build --no-cache app
 
-            echo "Starting services..."
-            docker-compose up -d --force-recreate app
+            echo "Starting MongoDB first..."
+            docker-compose up -d mongo
+            sleep 5
 
-            echo "Waiting for services to stabilize..."
-            sleep 10
+            echo "Starting app service..."
+            docker-compose up -d app
 
             echo "Checking service status..."
             docker-compose ps
 
-            echo "Cleaning up old images in the background..."
-            docker image prune -f &
+            echo "Showing logs..."
+            docker-compose logs --tail=50
           EOF
