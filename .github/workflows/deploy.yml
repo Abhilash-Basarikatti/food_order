@@ -30,9 +30,11 @@ jobs:
           ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd food-app
 
-            echo "Stopping and removing existing Docker container (if any)..."
-            docker ps -q --filter "name=food-app" | xargs -r docker stop
-            docker ps -a -q --filter "name=food-app" | xargs -r docker rm
+            echo "Stopping existing Docker Compose services..."
+            docker-compose down --volumes --remove-orphans
+
+            echo "Removing existing images..."
+            docker-compose rm -f -s -v
 
             echo "Killing any process listening on port 3000..."
             sudo fuser -k 3000/tcp || true
@@ -40,18 +42,13 @@ jobs:
             echo "Double check for any process using port 3000..."
             sudo lsof -t -i:3000 | xargs -r sudo kill -9 || true
 
-            echo "Remove any dangling Docker networks..."
-            docker network prune -f
+            echo "Cleaning up unused Docker resources..."
+            docker system prune -af --volumes
 
-            echo "Cleaning up unused Docker images..."
-            docker system prune -f
+            echo "Building and starting Docker Compose services with no cache..."
+            docker-compose build --no-cache
+            docker-compose up -d
 
-            echo "Building Docker image..."
-            docker build -t food-app .
-
-            echo "Waiting a few seconds to ensure port 3000 is available..."
-            sleep 5
-
-            echo "Running Docker container..."
-            docker run -d --name food-app -p 3000:3000 food-app
+            echo "Checking service status..."
+            docker-compose ps
           EOF
