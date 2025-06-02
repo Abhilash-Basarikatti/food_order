@@ -21,22 +21,28 @@
 version: '3'
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: food-app
     ports:
       - "3000:3000"
     depends_on:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017/zomato_clone
-    restart: unless-stopped    # <-- auto restart container unless explicitly stopped
+      - PORT=3000
+      - NODE_ENV=production
+    restart: unless-stopped
 
   mongo:
     image: mongo
+    container_name: food-app-mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    restart: unless-stopped    # <-- auto restart container unless explicitly stopped
+    restart: unless-stopped
 
 volumes:
   mongo_data:

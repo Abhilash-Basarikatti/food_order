@@ -33,14 +33,18 @@ jobs:
             echo "Taking down all services..."
             docker-compose down --volumes
 
-            echo "Removing old containers if any exist..."
+            echo "Removing old containers and images..."
             docker-compose rm -f
-
+            docker rmi food-app_app || true
+            
             echo "Killing any process using port 3000..."
             sudo fuser -k 3000/tcp || true
             
             echo "Building app with latest changes..."
             docker-compose build --no-cache app
+            
+            echo "Verifying image was built..."
+            docker images | grep food-app_app
 
             echo "Starting MongoDB first..."
             docker-compose up -d mongo
@@ -49,18 +53,26 @@ jobs:
             echo "Running database seed..."
             docker-compose run --rm app node scripts/seedDatabase.js
             
-            echo "Starting app service..."
+            echo "Starting app service with logs..."
             docker-compose up -d app
+            docker-compose logs app
 
+            echo "Waiting for app to start..."
+            sleep 10
+
+            echo "Verifying app container is running..."
+            docker ps | grep food-app_app
+            
             echo "Verifying port 3000 is accessible..."
             timeout 30 bash -c 'while ! nc -z localhost 3000; do sleep 1; done' || echo "Port 3000 not responding after 30 seconds"
             curl -s http://localhost:3000 > /dev/null && echo "App is responding on port 3000" || echo "App is not responding on port 3000"
 
-            echo "Checking service status..."
-            docker-compose ps
+            echo "Checking all running containers..."
+            docker ps
 
-            echo "Showing logs..."
-            docker-compose logs --tail=50
+            echo "Showing recent logs..."
+            docker-compose logs --tail=50 app
 
             echo "Deployment complete. App should be accessible on port 3000"
+            echo "If app is not accessible, check logs with: docker-compose logs app"
           EOF
