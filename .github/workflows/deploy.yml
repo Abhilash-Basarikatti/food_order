@@ -31,8 +31,17 @@ jobs:
             docker stop food-app || true
             docker rm food-app || true
 
-            echo "Killing anything on port 3000 (just in case)..."
+            echo "Killing any process on port 3000..."
             sudo fuser -k 3000/tcp || true
+
+            if sudo lsof -i:3000; then
+              echo "Processes still listening on port 3000:"
+              sudo lsof -i:3000
+              echo "Trying to kill them forcefully..."
+              sudo lsof -t -i:3000 | xargs -r sudo kill -9
+            else
+              echo "Port 3000 is free"
+            fi
 
             echo "Cleaning up unused Docker images..."
             docker system prune -f
