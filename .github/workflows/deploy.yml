@@ -1,82 +1,3 @@
-# name: Deploy to EC2
-
-# on:
-#   push:
-#     branches: [main]
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
-
-#       - name: Add SSH key
-#         run: |
-#           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
-#           chmod 600 ec2_key.pem
-
-#       - name: Prepare folder on EC2
-#         run: |
-#           ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "rm -rf food-app && mkdir food-app"
-
-#       - name: Copy files to EC2
-#         run: |
-#           scp -i ec2_key.pem -r * ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/food-app
-
-#       - name: Deploy on EC2
-#         run: |
-#           ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-#             cd food-app
-            
-#             echo "Taking down all services..."
-#             docker-compose down --volumes
-
-#             echo "Removing old containers and images..."
-#             docker-compose rm -f
-#             docker rmi food-app_app || true
-            
-#             echo "Killing any process using port 3000..."
-#             sudo fuser -k 3000/tcp || true
-            
-#             echo "Building app with latest changes..."
-#             docker-compose build --no-cache app
-            
-#             echo "Verifying image was built..."
-#             docker images | grep food-app_app
-
-#             echo "Starting MongoDB first..."
-#             docker-compose up -d mongo
-#             sleep 10
-
-#             echo "Running database seed..."
-#             docker-compose run --rm app node scripts/seedDatabase.js
-            
-#             echo "Starting app service with logs..."
-#             docker-compose up -d app
-#             docker-compose logs app
-
-#             echo "Waiting for app to start..."
-#             sleep 10
-
-#             echo "Verifying app container is running..."
-#             docker ps | grep food-app_app
-            
-#             echo "Verifying port 3000 is accessible..."
-#             timeout 30 bash -c 'while ! nc -z localhost 3000; do sleep 1; done' || echo "Port 3000 not responding after 30 seconds"
-#             curl -s http://localhost:3000 > /dev/null && echo "App is responding on port 3000" || echo "App is not responding on port 3000"
-
-#             echo "Checking all running containers..."
-#             docker ps
-
-#             echo "Showing recent logs..."
-#             docker-compose logs --tail=50 app
-
-#             echo "Deployment complete. App should be accessible on port 3000"
-#             echo "If app is not accessible, check logs with: docker-compose logs app"
-#           EOF
-
 name: Deploy to EC2
 
 on:
@@ -112,15 +33,30 @@ jobs:
             echo "Pulling latest changes and rebuilding services..."
             docker-compose pull
             docker-compose build
-     
-            echo "Updating running services..."
-            docker-compose up -d --remove-orphans
 
-            echo "Checking service status..."
-            docker-compose ps
-             
+            echo "Stopping existing services..."
+            docker-compose down
+
+            echo "Starting services..."
+            docker-compose up -d
+
+            echo "Waiting for services to start..."
+            sleep 10
+
             echo "Running database seed..."
             docker-compose run --rm app node scripts/seedDatabase.js
+
+            echo "Checking container status..."
+            docker ps
+
+            echo "Checking app logs..."
+            docker logs food-app
+
+            echo "Testing app accessibility..."
+            curl -v http://localhost:3000
+
+            echo "Container information:"
+            docker inspect food-app
 
             echo "Cleaning up any unused resources in the background..."
             docker system prune -f &
