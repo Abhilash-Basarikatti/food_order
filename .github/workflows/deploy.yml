@@ -30,25 +30,16 @@ jobs:
           ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd food-app
 
-            echo "Stopping existing Docker Compose services..."
-            docker-compose down --volumes --remove-orphans
+            echo "Pulling latest changes and rebuilding services..."
+            docker-compose pull
+            docker-compose build
 
-            echo "Removing existing images..."
-            docker-compose rm -f -s -v
-
-            echo "Killing any process listening on port 3000..."
-            sudo fuser -k 3000/tcp || true
-
-            echo "Double check for any process using port 3000..."
-            sudo lsof -t -i:3000 | xargs -r sudo kill -9 || true
-
-            echo "Cleaning up unused Docker resources..."
-            docker system prune -af --volumes
-
-            echo "Building and starting Docker Compose services with no cache..."
-            docker-compose build --no-cache
-            docker-compose up -d
+            echo "Updating running services..."
+            docker-compose up -d --remove-orphans
 
             echo "Checking service status..."
             docker-compose ps
+
+            echo "Cleaning up any unused resources in the background..."
+            docker system prune -f &
           EOF
