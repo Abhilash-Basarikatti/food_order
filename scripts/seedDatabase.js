@@ -3,7 +3,7 @@ const Restaurant = require('../models/Restaurant');
 const restaurants = require('./seedData');
 
 // MongoDB connection string
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zomato_clone';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://mongo:27017/zomato_clone';
 
 async function validateData() {
     console.log('Validating restaurant data...');
@@ -40,28 +40,33 @@ async function seedDatabase() {
         });
         console.log('Connected to MongoDB successfully');
 
-        // Get database stats before clearing
+        // Get database stats before seeding
         const beforeCount = await Restaurant.countDocuments();
-        console.log(`Current restaurant count before clearing: ${beforeCount}`);
+        console.log(`Current restaurant count before seeding: ${beforeCount}`);
 
-        // Clear existing data
-        console.log('Clearing existing restaurants...');
-        const deleteResult = await Restaurant.deleteMany({});
-        console.log(`Cleared ${deleteResult.deletedCount} existing restaurants`);
-
-        // Insert new restaurants
-        console.log('Inserting new restaurants...');
-        const result = await Restaurant.insertMany(restaurants, { ordered: true });
-        console.log(`Successfully seeded ${result.length} restaurants`);
+        // Upsert each restaurant
+        console.log('Upserting restaurants...');
+        for (const restaurant of restaurants) {
+            await Restaurant.findOneAndUpdate(
+                { name: restaurant.name },
+                restaurant,
+                { 
+                    upsert: true,
+                    new: true,
+                    setDefaultsOnInsert: true
+                }
+            );
+            console.log(`Upserted restaurant: ${restaurant.name}`);
+        }
 
         // Verify the insertion
         const afterCount = await Restaurant.countDocuments();
         console.log(`Total restaurants in database after seeding: ${afterCount}`);
 
-        // Log each restaurant that was added
-        const addedRestaurants = await Restaurant.find({});
-        addedRestaurants.forEach(restaurant => {
-            console.log(`Added restaurant: ${restaurant.name} with ${restaurant.menu.length} menu items`);
+        // Log each restaurant that was added or updated
+        const updatedRestaurants = await Restaurant.find({});
+        updatedRestaurants.forEach(restaurant => {
+            console.log(`Restaurant in DB: ${restaurant.name} with ${restaurant.menu.length} menu items`);
         });
 
         console.log('Database seeding completed successfully');

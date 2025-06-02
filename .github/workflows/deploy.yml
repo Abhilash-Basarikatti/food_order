@@ -41,8 +41,11 @@ jobs:
 
             echo "Starting MongoDB first..."
             docker-compose up -d mongo
-            sleep 5
+            sleep 10
 
+            echo "Running database seed..."
+            docker-compose run --rm app node scripts/seedDatabase.js
+            
             echo "Starting app service..."
             docker-compose up -d app
 
