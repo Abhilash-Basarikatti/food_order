@@ -36,6 +36,9 @@ jobs:
             echo "Removing old containers if any exist..."
             docker-compose rm -f
 
+            echo "Killing any process using port 3000..."
+            sudo fuser -k 3000/tcp || true
+            
             echo "Building app with latest changes..."
             docker-compose build --no-cache app
 
@@ -49,9 +52,15 @@ jobs:
             echo "Starting app service..."
             docker-compose up -d app
 
+            echo "Verifying port 3000 is accessible..."
+            timeout 30 bash -c 'while ! nc -z localhost 3000; do sleep 1; done' || echo "Port 3000 not responding after 30 seconds"
+            curl -s http://localhost:3000 > /dev/null && echo "App is responding on port 3000" || echo "App is not responding on port 3000"
+
             echo "Checking service status..."
             docker-compose ps
 
             echo "Showing logs..."
             docker-compose logs --tail=50
+
+            echo "Deployment complete. App should be accessible on port 3000"
           EOF
