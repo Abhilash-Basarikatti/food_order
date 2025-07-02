@@ -1,6 +1,7 @@
 # 🍽️ Online Food Ordering System – DevOps Project
 
-This is a full-stack **Online Food Ordering Web Application** developed using the **MERN stack**, fully containerized and deployed using modern **DevOps tools** like Docker, GitHub Actions, and AWS EC2.
+This project is a complete, production-ready online food ordering platform built using the MERN stack (MongoDB, Express.js, Node.js) with a static frontend (HTML/CSS/JS). It supports user and admin features like browsing menus, placing orders, and managing listings. What sets this project apart is its end-to-end DevOps integration—the app is fully Dockerized, uses GitHub Actions for continuous integration and deployment (CI/CD), and is hosted on a live AWS EC2 instance using Docker Compose, simulating a real-world deployment pipeline used by tech companies.
+
 
 ---
 
