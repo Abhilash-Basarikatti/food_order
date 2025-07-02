@@ -41,9 +41,32 @@ This is a full-stack **Online Food Ordering Web Application** developed using th
 
 ---
 
-## 📦 Setup Locally
+## ⚙️ CI/CD Workflow
 
-```bash
-git clone https://github.com/Abhilash-Basarikatti/online_food_order_devops_project.git
-cd online_food_order_devops_project
-docker-compose up --build
+### 🔄 GitHub Actions:
+- On every push to `main`, GitHub Actions:
+  - 🛠 Builds Docker image
+  - 📦 Pushes it to Docker Hub
+  - 🔐 SSHs into AWS EC2 instance
+  - ⬇️ Pulls the latest image and restarts containers using Docker Compose
+
+### 🐳 Docker Compose:
+- Manages both the Node.js backend and MongoDB as services
+- Ensures smooth multi-container deployment
+
+### ☁️ AWS EC2:
+- Acts as the production server
+- Hosts the application behind Docker
+
+---
+
+## 🧠 Learning & Purpose
+
+This project was developed to demonstrate practical **DevOps implementation** in a real-world application. It combines:
+
+- 🌐 Web development skills (frontend + backend)
+- 🔁 DevOps automation (CI/CD)
+- ☁️ Cloud deployment (AWS)
+- 🐳 Docker containerization
+
+---
