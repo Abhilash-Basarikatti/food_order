@@ -1,9 +1,5 @@
 # 🍽️ Online Food Ordering System – DevOps Project
 
-![CI/CD](https://img.shields.io/github/actions/workflow/status/Abhilash-Basarikatti/online_food_order_devops_project/deploy.yml?branch=main)
-![Dockerized](https://img.shields.io/badge/docker-ready-blue)
-![Status](https://img.shields.io/badge/status-deployed-green)
-
 This is a full-stack **Online Food Ordering Web Application** developed using the **MERN stack**, fully containerized and deployed using modern **DevOps tools** like Docker, GitHub Actions, and AWS EC2.
 
 ---
@@ -70,6 +66,4 @@ This project was developed to demonstrate practical **DevOps implementation** in
 - 🐳 Docker containerization
 
 ---
-
-<pre><code>## 📁 Folder Structure <code> . ├── backend/ # Node.js & Express backend │ ├── routes/ # API routes │ ├── models/ # MongoDB models │ └── server.js # Entry point │ ├── frontend/ # Static HTML/CSS/JS frontend │ ├── index.html │ ├── style.css │ └── script.js │ ├── Dockerfile # Docker build config for app ├── docker-compose.yml # Defines Node + MongoDB services └── .github/ └── workflows/ └── deploy.yml # GitHub Actions CI/CD pipeline </code> </code></pre>
 
