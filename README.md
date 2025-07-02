@@ -70,3 +70,6 @@ This project was developed to demonstrate practical **DevOps implementation** in
 - 🐳 Docker containerization
 
 ---
+
+<pre><code>## 📁 Folder Structure <code> . ├── backend/ # Node.js & Express backend │ ├── routes/ # API routes │ ├── models/ # MongoDB models │ └── server.js # Entry point │ ├── frontend/ # Static HTML/CSS/JS frontend │ ├── index.html │ ├── style.css │ └── script.js │ ├── Dockerfile # Docker build config for app ├── docker-compose.yml # Defines Node + MongoDB services └── .github/ └── workflows/ └── deploy.yml # GitHub Actions CI/CD pipeline </code> </code></pre>
+
